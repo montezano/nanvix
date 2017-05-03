@@ -111,6 +111,7 @@ PUBLIC void pm_init(void)
 	kstrncpy(IDLE->name, "idle", NAME_MAX);
 	IDLE->utime = 0;
 	IDLE->ktime = 0;
+	IDLE->rstime = 0;
 	IDLE->cutime = 0;
 	IDLE->cktime = 0;
 	IDLE->state = PROC_RUNNING;

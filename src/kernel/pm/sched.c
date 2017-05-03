@@ -100,6 +100,7 @@ PUBLIC void yield(void)
 		 */
 		if (p->priority <= next->priority)
 		{
+			// next->counter++;
 			next = p;
 		}
 			
@@ -107,8 +108,8 @@ PUBLIC void yield(void)
 		 * Increment waiting
 		 * time of process.
 		 */
-		else
-			p->counter++;
+		// else
+		// 	p->counter++;
 	}
 	
 	/* Switch to next process. */

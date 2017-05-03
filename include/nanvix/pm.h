@@ -189,6 +189,7 @@
 		/**@{*/
     	unsigned utime;  /**< User CPU time.                          */
     	unsigned ktime;  /**< Kernel CPU time.                        */
+    	unsigned rstime;  /**< User CPU time till since last schedule.*/
 		unsigned cutime; /**< User CPU time of terminated children.   */
 		unsigned cktime; /**< Kernel CPU time of terminated children. */
 		/**@}*/

@@ -147,6 +147,7 @@ found:
 	kstrncpy(proc->name, curr_proc->name, NAME_MAX);
 	proc->utime = 0;
 	proc->ktime = 0;
+	proc->rstime = 0;
 	proc->cutime = 0;
 	proc->cktime = 0;
 	proc->priority = curr_proc->priority;
