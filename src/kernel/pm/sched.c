@@ -24,6 +24,11 @@
 #include <nanvix/pm.h>
 #include <signal.h>
 
+#include <nanvix/klib.h>
+
+#define MIN_INT -2147483648
+#define MAX_INT 2147483647
+
 /**
  * @brief Schedules a process to execution.
  * 
@@ -96,24 +101,37 @@ PUBLIC void yield(void)
 		
 		/*
 		 * Process with higher
-		 * waiting time found.
+		 * priority found.
 		 */
 		if (p->priority <= next->priority)
 		{
-			// next->counter++;
 			next = p;
 		}
-			
-		/*
-		 * Increment waiting
-		 * time of process.
-		 */
-		// else
-		// 	p->counter++;
+	}
+
+	/*
+	 * Decreassing priority if
+	 * the process had at least 10 quantums.
+	 */
+	if(next->rstime >= 500)
+	{
+		next->priority++;
+		next->rstime = 0;
+	}
+
+	/* Horrible, need a new logic for this*/
+	/*
+	 * If the process is idle,
+	 * set the minimum priority.
+	 */
+	if(kstrcmp(next->name, "idle") == 0)
+	{
+		next->priority = MAX_INT;
+		next->rstime = 0;
 	}
 	
 	/* Switch to next process. */
-	next->priority = PRIO_USER;
+	next->rstime += PROC_QUANTUM;
 	next->state = PROC_RUNNING;
 	next->counter = PROC_QUANTUM;
 	switch_to(next);
