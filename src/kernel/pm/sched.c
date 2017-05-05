@@ -124,14 +124,12 @@ PUBLIC void yield(void)
 	 * If the process is idle,
 	 * set the minimum priority.
 	 */
-	if(kstrcmp(next->name, "idle") == 0)
+	if(&proctab[0] != next)
 	{
-		next->priority = MAX_INT;
-		next->rstime = 0;
+		next->rstime += PROC_QUANTUM;
 	}
 	
 	/* Switch to next process. */
-	next->rstime += PROC_QUANTUM;
 	next->state = PROC_RUNNING;
 	next->counter = PROC_QUANTUM;
 	switch_to(next);

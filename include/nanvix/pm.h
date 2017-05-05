@@ -89,6 +89,8 @@
 	#define PRIO_TTY           0 /**< Waiting for terminal I/O.    */
 	#define PRIO_SIG          20 /**< Waiting for signal.          */
 	#define PRIO_USER         40 /**< User priority.               */
+	#define PRIO_IDLE         900/**< Idle priority.               */
+
 	/**@}*/
 
 	/**
