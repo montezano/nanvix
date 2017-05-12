@@ -72,6 +72,7 @@ PUBLIC void sleep(struct process **chain, int priority)
 	/* Put process to sleep. */
 	curr_proc->state = (priority >= 0) ? PROC_WAITING : PROC_SLEEPING;
 	curr_proc->priority = priority;
+	curr_proc->original_priority = priority;
 	curr_proc->chain = chain;
 	
 	yield();

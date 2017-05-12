@@ -31,6 +31,7 @@
 #include <signal.h>
 #include <limits.h>
 
+#include <nanvix/syscall.h>
 /**
  * @brief Idle process page directory.
  */
@@ -117,6 +118,7 @@ PUBLIC void pm_init(void)
 	IDLE->state = PROC_RUNNING;
 	IDLE->counter = PROC_QUANTUM;
 	IDLE->priority = PRIO_IDLE;
+	IDLE->original_priority = PRIO_IDLE;
 	IDLE->nice = NZERO;
 	IDLE->alarm = 0;
 	IDLE->next = NULL;

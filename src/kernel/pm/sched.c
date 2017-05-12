@@ -26,6 +26,9 @@
 
 #include <nanvix/klib.h>
 
+#include <nanvix/syscall.h>
+
+
 #define MIN_INT -2147483648
 #define MAX_INT 2147483647
 
@@ -99,38 +102,40 @@ PUBLIC void yield(void)
 		if (p->state != PROC_READY)
 			continue;
 		
-		/*
-		 * Process with higher
-		 * priority found.
-		 */
-		if (p->priority <= next->priority)
-		{
-			next = p;
-		}
+
+
+			if (p->priority >= next->priority){
+					p->priority--;
+					// kprintf("2 - prioridade do processo %s: %d", p->name, p->priority);
+
+			} else
+				next = p;
+
+
 	}
 
 	/*
 	 * Decreassing priority if
 	 * the process had at least 10 quantums.
 	 */
-	if(next->rstime >= 500)
-	{
-		next->priority++;
-		next->rstime = 0;
-	}
+	// if(next->rstime >= 500)
+	// {
+	// 	next->priority++;
+	// 	next->rstime = 0;
+	// }
 
-	/* Horrible, need a new logic for this*/
 	/*
 	 * If the process is idle,
-	 * set the minimum priority.
+	 * set the minimum priority.t
 	 */
-	if(&proctab[0] != next)
-	{
-		next->rstime += PROC_QUANTUM;
-	}
+	// if(IDLE != next)
+	// {
+	// 	next->rstime += PROC_QUANTUM;
+	// }
 	
 	/* Switch to next process. */
 	next->state = PROC_RUNNING;
 	next->counter = PROC_QUANTUM;
+	next->priority = next->original_priority;
 	switch_to(next);
 }

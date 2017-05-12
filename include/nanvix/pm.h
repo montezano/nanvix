@@ -36,6 +36,8 @@
 	#include <sys/types.h>
 	#include <limits.h>
 	#include <signal.h>
+
+
 	
 	/**
 	 * @name Superuser credentials
@@ -89,7 +91,7 @@
 	#define PRIO_TTY           0 /**< Waiting for terminal I/O.    */
 	#define PRIO_SIG          20 /**< Waiting for signal.          */
 	#define PRIO_USER         40 /**< User priority.               */
-	#define PRIO_IDLE         900/**< Idle priority.               */
+	#define PRIO_IDLE         40/**< Idle priority.               */
 
 	/**@}*/
 
@@ -203,6 +205,7 @@
     	unsigned state;          /**< Current state.              */
     	int counter;             /**< Remaining quantum.          */
     	int priority;            /**< Process priorities.         */
+    	int original_priority;   /**< Original process priority.  */
     	int nice;                /**< Nice for scheduling.        */
     	unsigned alarm;          /**< Alarm.                      */
 		struct process *next;    /**< Next process in a list.     */
