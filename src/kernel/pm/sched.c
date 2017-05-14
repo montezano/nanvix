@@ -101,38 +101,14 @@ PUBLIC void yield(void)
 		/* Skip non-ready process. */
 		if (p->state != PROC_READY)
 			continue;
-		
-
 
 			if (p->priority >= next->priority){
 					p->priority--;
-					// kprintf("2 - prioridade do processo %s: %d", p->name, p->priority);
 
 			} else
 				next = p;
-
-
 	}
 
-	/*
-	 * Decreassing priority if
-	 * the process had at least 10 quantums.
-	 */
-	// if(next->rstime >= 500)
-	// {
-	// 	next->priority++;
-	// 	next->rstime = 0;
-	// }
-
-	/*
-	 * If the process is idle,
-	 * set the minimum priority.t
-	 */
-	// if(IDLE != next)
-	// {
-	// 	next->rstime += PROC_QUANTUM;
-	// }
-	
 	/* Switch to next process. */
 	next->state = PROC_RUNNING;
 	next->counter = PROC_QUANTUM;
