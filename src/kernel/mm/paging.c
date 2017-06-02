@@ -290,45 +290,40 @@ PRIVATE struct
  * @returns Upon success, the number of the frame is returned. Upon failure, a
  *          negative number is returned instead.
  */
-PRIVATE int allocf(void) 
+PRIVATE int allocf(void)
 {
-	int i = 0;      /* Loop index.  */
-	int oldest = -1; /* Oldest page. */
+	int i;      /* Loop index.  */
+	int oldest; /* Oldest page. */
 
 	int found = 0; // [GP] Caso encontre uma moldura vazia
 	unsigned aux = 0;
-	struct pte *pg = 0;
-
-	kprintf("frame: %d, accessed: %d\n", i, pg->accessed);
-
+	struct pte *pg;
 	
-	#define OLDEST(x, y) (frames[x].age > frames[y].age)
+	#define OLDEST(x, y) (frames[x].age < frames[y].age)
 	
 	/* Search for a free frame. */
+	oldest = -1;
 	for (i = 0; i < NR_FRAMES; i++)
 	{
 		pg = getpte(curr_proc, frames[i].addr);
-
-		if (frames[i].count == 0)
+		/* Found it. */
+		if (!found && (frames[i].count == 0))
 		{
 			oldest = i;
 			found = 1;
-		} 
+		}		
 
-		if (frames[i].count < 2 && !found)
+		/* Local page replacement policy. */
+		if (!found && (frames[i].owner == curr_proc->pid))
 		{
-			/* Local page replacement policy. */
-			if (frames[i].owner == curr_proc->pid)
-			{
-				
-				/* Oldest page found. */
-				if ((oldest < 0) || (OLDEST(i, oldest)))
-					oldest = i;
-			}
+			/* Skip shared pages. */
+			if (frames[i].count > 1)
+				continue;
+			
+			/* Oldest page found. */
+			if ((oldest < 0) || (OLDEST(i, oldest)))
+				oldest = i;
 		}
-
-		kprintf("frame: %d, accessed: %d\n", i, pg->accessed);
-
 		aux = (aux + pg->accessed) << 31;
 		frames[i].age = (frames[i].age >> 1) | aux;
 		pg->accessed = 0;
@@ -339,12 +334,13 @@ PRIVATE int allocf(void)
 		return (-1);
 	
 	/* Swap page out. */
-	if (swap_out(curr_proc, frames[i = oldest].addr))
+	if (!found && swap_out(curr_proc, frames[i = oldest].addr))
 		return (-1);
 	
 
-	frames[i].count = 1;
-	return (i);
+	frames[oldest].count = 1;
+	
+	return (oldest);
 }
 
 /**
