@@ -290,52 +290,48 @@ PRIVATE struct
  * @returns Upon success, the number of the frame is returned. Upon failure, a
  *          negative number is returned instead.
  */
-PRIVATE int allocf(void) // [GP] FIFO accessed
-						 // unsigned aux = 0;
-					     // aux = (aux + accessed) << 31;
-						 // age = (age >> 1) | aux;
+PRIVATE int allocf(void) 
 {
-	int i;      /* Loop index.  */
-	int oldest; /* Oldest page. */
+	int i = 0;      /* Loop index.  */
+	int oldest = -1; /* Oldest page. */
+
 	int found = 0; // [GP] Caso encontre uma moldura vazia
-	unsigned aux = 0; // [GP]
-	struct pte *page;
+	unsigned aux = 0;
+	struct pte *pg = 0;
+
+	kprintf("frame: %d, accessed: %d\n", i, pg->accessed);
+
 	
-	#define OLDEST(x, y) (frames[x].age < frames[y].age)
+	#define OLDEST(x, y) (frames[x].age > frames[y].age)
 	
 	/* Search for a free frame. */
-	oldest = -1;
 	for (i = 0; i < NR_FRAMES; i++)
 	{
-		/* Found it. */
-		// if (frames[i].count == 0)
-		// 	goto found;
+		pg = getpte(curr_proc, frames[i].addr);
 
-		page = getpte(curr_proc, frames[i].addr);
-
-		if (frames[i].count == 0) // [GP]
+		if (frames[i].count == 0)
 		{
 			oldest = i;
 			found = 1;
 		} 
 
-		if (frames[i].count > 1)
+		if (frames[i].count < 2 && !found)
 		{
 			/* Local page replacement policy. */
 			if (frames[i].owner == curr_proc->pid)
 			{
-				/* Skip shared pages. */
-				// if (frames[i].count > 1)
-				// 	continue;
 				
 				/* Oldest page found. */
-				if ((oldest < 0) || (OLDEST(i, oldest)) && !found)
+				if ((oldest < 0) || (OLDEST(i, oldest)))
 					oldest = i;
 			}
 		}
-		aux = (aux + page->accessed) << 31;
-		age = (age >> 1) | aux;
-		page->accessed = 0;
+
+		kprintf("frame: %d, accessed: %d\n", i, pg->accessed);
+
+		aux = (aux + pg->accessed) << 31;
+		frames[i].age = (frames[i].age >> 1) | aux;
+		pg->accessed = 0;
 	}
 	
 	/* No frame left. */
@@ -346,11 +342,8 @@ PRIVATE int allocf(void) // [GP] FIFO accessed
 	if (swap_out(curr_proc, frames[i = oldest].addr))
 		return (-1);
 	
-found:		
 
-	frames[i].age = ticks;
 	frames[i].count = 1;
-	
 	return (i);
 }
 
