@@ -56,7 +56,7 @@
  * @returns The requested page table entry.
  */
 #define getpte(p, a) \
-	(&((struct pte *)((getpde(p, a)->frame << PAGE_SHIFT) + KBASE_VIRT))[PG(a)])
+	(&((struct pte *)((getpde(p, a)->frame << PAGE_SHIFT) + KBASE_VIRT))[PG(a)]) // [GP] Aqui é traduzido end. virtual para moldura
 
 
 /*============================================================================*
@@ -189,7 +189,7 @@ PRIVATE int swap_in(unsigned frame, addr_t addr)
 	
 	/* Copy page. */
 	kmemcpy((void *)addr, kpg, PAGE_SIZE);
-	pg->accessed = 0;
+	pg->accessed = 0; // [GP] Aqui deve ser colocado em 1 ?!
 	pg->dirty = 0;
 		
 	putkpg(kpg);
@@ -290,10 +290,16 @@ PRIVATE struct
  * @returns Upon success, the number of the frame is returned. Upon failure, a
  *          negative number is returned instead.
  */
-PRIVATE int allocf(void)
+PRIVATE int allocf(void) // [GP] FIFO accessed
+						 // unsigned aux = 0;
+					     // aux = (aux + accessed) << 31;
+						 // age = (age >> 1) | aux;
 {
 	int i;      /* Loop index.  */
 	int oldest; /* Oldest page. */
+	int found = 0; // [GP] Caso encontre uma moldura vazia
+	unsigned aux = 0; // [GP]
+	struct pte *page;
 	
 	#define OLDEST(x, y) (frames[x].age < frames[y].age)
 	
@@ -302,20 +308,34 @@ PRIVATE int allocf(void)
 	for (i = 0; i < NR_FRAMES; i++)
 	{
 		/* Found it. */
-		if (frames[i].count == 0)
-			goto found;
-		
-		/* Local page replacement policy. */
-		if (frames[i].owner == curr_proc->pid)
+		// if (frames[i].count == 0)
+		// 	goto found;
+
+		page = getpte(curr_proc, frames[i].addr);
+
+		if (frames[i].count == 0) // [GP]
 		{
-			/* Skip shared pages. */
-			if (frames[i].count > 1)
-				continue;
-			
-			/* Oldest page found. */
-			if ((oldest < 0) || (OLDEST(i, oldest)))
-				oldest = i;
+			oldest = i;
+			found = 1;
+		} 
+
+		if (frames[i].count > 1)
+		{
+			/* Local page replacement policy. */
+			if (frames[i].owner == curr_proc->pid)
+			{
+				/* Skip shared pages. */
+				// if (frames[i].count > 1)
+				// 	continue;
+				
+				/* Oldest page found. */
+				if ((oldest < 0) || (OLDEST(i, oldest)) && !found)
+					oldest = i;
+			}
 		}
+		aux = (aux + page->accessed) << 31;
+		age = (age >> 1) | aux;
+		page->accessed = 0;
 	}
 	
 	/* No frame left. */
@@ -672,7 +692,7 @@ PUBLIC int vfault(addr_t addr)
 	struct pregion *preg; /* Working process region.               */
 	
 	/* Get associated region. */
-	preg = findreg(curr_proc, addr);
+	preg = findreg(curr_proc, addr); //[GP] Aqui temos a região da falta
 	if (preg == NULL)
 		goto error0;
 	
@@ -694,30 +714,30 @@ PUBLIC int vfault(addr_t addr)
 
 	pg = (reg->flags & REGION_DOWNWARDS) ?
 		&reg->pgtab[REGION_PGTABS-(PGTAB(preg->start)-PGTAB(addr))-1][PG(addr)]: 
-		&reg->pgtab[PGTAB(addr) - PGTAB(preg->start)][PG(addr)];
+		&reg->pgtab[PGTAB(addr) - PGTAB(preg->start)][PG(addr)]; // [GP] verifica a posição do endereço na mem. virtual
 		
 	/* Clear page. */
-	if (pg->zero)
+	if (pg->zero) //[GP] limpa uma determinada pagina, já possui um frame livre
 	{
-		if (allocupg(addr, reg->mode & MAY_WRITE))
+		if (allocupg(addr, reg->mode & MAY_WRITE)) //[GP] limpa e prepara uma entrada da tabela de paginas
 			goto error1;
-		kmemset((void *)(addr & PAGE_MASK), 0, PAGE_SIZE);
+		kmemset((void *)(addr & PAGE_MASK), 0, PAGE_SIZE); //[GP] limpa os dados da pagina 
 	}
 		
 	/* Load page from executable file. */
-	else if (pg->fill)
+	else if (pg->fill) // [GP] pagina limpa, pronta para uso, já possui um frame livre
 	{
 		/* Read page. */
-		if (readpg(reg, addr))
+		if (readpg(reg, addr)) //[GP] aloca os dados 
 			goto error1;
 	}
 		
 	/* Swap page in. */
-	else
+	else // [GP] the magic begins
 	{
-		if ((frame = allocf()) < 0)
+		if ((frame = allocf()) < 0) // [GP] procura um frame fazio, caso não encontre faz swap out
 			goto error1;
-		if (swap_in(frame, addr))
+		if (swap_in(frame, addr)) // [GP] aloca algum frame disponível
 			goto error2;
 		frames[frame].addr = addr & PAGE_MASK;
 	}
