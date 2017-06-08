@@ -80,6 +80,11 @@
 	 */
 	#define PGTAB(a) ((unsigned)(a) >> PGTAB_SHIFT)
 
+	/*
+	@brief Update counter's frame.
+	*/
+	void update_counter(void);
+
 #endif /* _ASM_FILE_ */
 
 #endif /* I386_PAGING_H_ */

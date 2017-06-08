@@ -21,12 +21,16 @@
 #include <nanvix/hal.h>
 #include <nanvix/klib.h>
 #include <nanvix/pm.h>
+#include <i386/paging.h>
 
 /* Clock ticks since system initialization. */
 PUBLIC unsigned ticks = 0;
 
 /* Time at system startup. */
 PUBLIC unsigned startup_time = 0;
+
+/*Number of clock's interruptions [GP]*/
+#define TIMES 500  
 
 /*
  * Handles a timer interrupt.
@@ -42,6 +46,9 @@ PRIVATE void do_clock()
 	}
 	
 	curr_proc->utime++;
+
+	if(curr_proc->utime % TIMES == 0)
+		update_counter();
 		
 	/* Give up processor time. */
 	if (--curr_proc->counter == 0)

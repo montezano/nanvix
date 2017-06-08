@@ -294,10 +294,7 @@ PRIVATE int allocf(void)
 {
 	int i;      /* Loop index.  */
 	int oldest; /* Oldest page. */
-
 	int found = 0; // [GP] Caso encontre uma moldura vazia
-	unsigned aux = 0;
-	struct pte *pg;
 	
 	#define OLDEST(x, y) (frames[x].age < frames[y].age)
 	
@@ -305,7 +302,6 @@ PRIVATE int allocf(void)
 	oldest = -1;
 	for (i = 0; i < NR_FRAMES; i++)
 	{
-		pg = getpte(curr_proc, frames[i].addr);
 		/* Found it. */
 		if (!found && (frames[i].count == 0))
 		{
@@ -318,17 +314,12 @@ PRIVATE int allocf(void)
 		{
 			/* Skip shared pages. */
 			if (frames[i].count > 1)
-				goto update;
+				continue;
 			
 			/* Oldest page found. */
 			if ((oldest < 0) || (OLDEST(i, oldest)))
 				oldest = i;
 		}
-
-	update:
-		aux = (aux + pg->accessed) << 31;
-		frames[i].age = (frames[i].age >> 1) | aux;
-		pg->accessed = 0;
 	}
 	
 	/* No frame left. */
@@ -343,6 +334,29 @@ PRIVATE int allocf(void)
 	frames[oldest].count = 1;
 	
 	return (oldest);
+}
+
+/**
+ * @brief Update counter's frame.
+*/
+void update_counter(void)
+{
+	int i;
+	unsigned aux;
+	struct pte *pg;
+
+	for (i = 0; i < NR_FRAMES; i++)
+	{
+		pg = getpte(curr_proc, frames[i].addr);
+
+		if (frames[i].owner == curr_proc->pid)
+		{
+			aux = (aux + pg->accessed) << 31;
+			frames[i].age = (frames[i].age >> 1) | aux;
+			pg->accessed = 0;
+		}
+
+	}
 }
 
 /**
