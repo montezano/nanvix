@@ -318,12 +318,14 @@ PRIVATE int allocf(void)
 		{
 			/* Skip shared pages. */
 			if (frames[i].count > 1)
-				continue;
+				goto update;
 			
 			/* Oldest page found. */
 			if ((oldest < 0) || (OLDEST(i, oldest)))
 				oldest = i;
 		}
+
+	update:
 		aux = (aux + pg->accessed) << 31;
 		frames[i].age = (frames[i].age >> 1) | aux;
 		pg->accessed = 0;
