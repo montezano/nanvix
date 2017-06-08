@@ -348,11 +348,11 @@ void update_counter(void)
 	{
 		pg = getpte(curr_proc, frames[i].addr);
 
-		aux = (aux + pg->accessed) << 31;
+		aux = pg->accessed;
+		aux = aux << 31;
 		frames[i].age = (frames[i].age >> 1) | aux;
-		if(i == 2){
-			kprintf("frame: %d, counter: %x", i, frames[i].age);
-		}
+		if( i < 700 && i > 300)
+		kprintf("frame: %d, counter: %x, accessed: %d", i, frames[i].age, pg->accessed);
 
 		pg->accessed = 0;
 		aux = 0;
