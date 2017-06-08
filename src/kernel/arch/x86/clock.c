@@ -30,7 +30,7 @@ PUBLIC unsigned ticks = 0;
 PUBLIC unsigned startup_time = 0;
 
 /*Number of clock's interruptions [GP]*/
-#define TIMES 500  
+#define TIMES 50  
 
 /*
  * Handles a timer interrupt.
@@ -47,7 +47,7 @@ PRIVATE void do_clock()
 	
 	curr_proc->utime++;
 
-	if(curr_proc->utime % 250 == 0)
+	if(ticks % TIMES == 0)
 		update_counter();
 		
 	/* Give up processor time. */

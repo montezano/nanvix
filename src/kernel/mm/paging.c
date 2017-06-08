@@ -345,7 +345,9 @@ void update_counter(void)
 	int i;
 	unsigned aux = 0;
 	struct pte *pg;
+
 	kprintf("entrou");
+	
 	for (i = 0; i < NR_FRAMES; i++)
 	{
 		pg = getpte(curr_proc, frames[i].addr);
@@ -355,7 +357,6 @@ void update_counter(void)
 		kprintf("frame: %d, counter: %d", i, frames[i].age);
 
 		pg->accessed = 0;
-
 		aux = 0;
 
 	}
@@ -448,6 +449,7 @@ PRIVATE int readpg(struct region *reg, addr_t addr)
 	
 	/* Find page table entry. */
 	pg = getpte(curr_proc, addr);
+	pg->accessed = 1;
 	
 	/* Read page. */
 	off = reg->file.off + (PG(addr) << PAGE_SHIFT);
