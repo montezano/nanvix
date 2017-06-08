@@ -31,7 +31,7 @@ PUBLIC unsigned ticks2 = 0;
 PUBLIC unsigned startup_time = 0;
 
 /*Number of clock's interruptions [GP]*/
-#define TIMES 50  
+#define TIMES 500  
 
 /*
  * Handles a timer interrupt.

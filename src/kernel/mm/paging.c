@@ -294,7 +294,6 @@ PRIVATE int allocf(void)
 {
 	int i;      /* Loop index.  */
 	int oldest; /* Oldest page. */
-	int found = 0; // [GP] Caso encontre uma moldura vazia
 	
 	#define OLDEST(x, y) (frames[x].age < frames[y].age)
 	
@@ -303,22 +302,20 @@ PRIVATE int allocf(void)
 	for (i = 0; i < NR_FRAMES; i++)
 	{
 		/* Found it. */
-		if (!found && (frames[i].count == 0))
-		{
-			oldest = i;
-			found = 1;
-		}		
+		if (frames[i].count == 0)
+			goto found;
 
 		/* Local page replacement policy. */
-		if (!found && (frames[i].owner == curr_proc->pid))
+		if (frames[i].owner == curr_proc->pid)
 		{
 			/* Skip shared pages. */
 			if (frames[i].count > 1)
 				continue;
 			
 			/* Oldest page found. */
-			if ((oldest < 0) || (OLDEST(i, oldest)))
+			if ((oldest < 0) || (OLDEST(i, oldest))){
 				oldest = i;
+			}
 
 		}
 	}
@@ -328,13 +325,12 @@ PRIVATE int allocf(void)
 		return (-1);
 	
 	/* Swap page out. */
-	if (!found && swap_out(curr_proc, frames[i = oldest].addr))
+	if (swap_out(curr_proc, frames[i = oldest].addr))
 		return (-1);
 	
-
-	frames[oldest].count = 1;
-	
-	return (oldest);
+found: 
+	frames[i].count = 1;
+	return (i);
 }
 
 /**
@@ -354,7 +350,9 @@ void update_counter(void)
 
 		aux = (aux + pg->accessed) << 31;
 		frames[i].age = (frames[i].age >> 1) | aux;
-		kprintf("frame: %d, counter: %d", i, frames[i].age);
+		if(i == 2){
+			kprintf("frame: %d, counter: %x", i, frames[i].age);
+		}
 
 		pg->accessed = 0;
 		aux = 0;
