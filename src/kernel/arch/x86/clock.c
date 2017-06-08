@@ -25,6 +25,7 @@
 
 /* Clock ticks since system initialization. */
 PUBLIC unsigned ticks = 0;
+PUBLIC unsigned ticks2 = 0;
 
 /* Time at system startup. */
 PUBLIC unsigned startup_time = 0;
@@ -38,6 +39,7 @@ PUBLIC unsigned startup_time = 0;
 PRIVATE void do_clock()
 {
 	ticks++;
+	ticks2++;
 	
 	if (KERNEL_RUNNING(curr_proc))
 	{
@@ -47,8 +49,11 @@ PRIVATE void do_clock()
 	
 	curr_proc->utime++;
 
-	if(ticks % TIMES == 0)
+	if(ticks2 > TIMES)
+	{
 		update_counter();
+		ticks2 = 0;
+	}
 		
 	/* Give up processor time. */
 	if (--curr_proc->counter == 0)

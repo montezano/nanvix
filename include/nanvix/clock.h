@@ -35,6 +35,8 @@
 
 	/* Ticks since system initialization. */
 	EXTERN unsigned ticks;
+	EXTERN unsigned ticks2;
+
 	
 	/* Time at system startup. */
 	EXTERN unsigned startup_time;
