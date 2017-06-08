@@ -47,7 +47,7 @@ PRIVATE void do_clock()
 	
 	curr_proc->utime++;
 
-	if(curr_proc->utime % TIMES == 0)
+	if(curr_proc->utime % 250 == 0)
 		update_counter();
 		
 	/* Give up processor time. */

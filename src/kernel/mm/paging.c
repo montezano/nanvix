@@ -189,7 +189,7 @@ PRIVATE int swap_in(unsigned frame, addr_t addr)
 	
 	/* Copy page. */
 	kmemcpy((void *)addr, kpg, PAGE_SIZE);
-	pg->accessed = 0; // [GP] Aqui deve ser colocado em 1 ?!
+	pg->accessed = 1; // [GP] Aqui deve ser colocado em 1 ?!
 	pg->dirty = 0;
 		
 	putkpg(kpg);
@@ -319,6 +319,7 @@ PRIVATE int allocf(void)
 			/* Oldest page found. */
 			if ((oldest < 0) || (OLDEST(i, oldest)))
 				oldest = i;
+
 		}
 	}
 	
@@ -342,19 +343,20 @@ PRIVATE int allocf(void)
 void update_counter(void)
 {
 	int i;
-	unsigned aux;
+	unsigned aux = 0;
 	struct pte *pg;
-
+	kprintf("entrou");
 	for (i = 0; i < NR_FRAMES; i++)
 	{
 		pg = getpte(curr_proc, frames[i].addr);
 
-		if (frames[i].owner == curr_proc->pid)
-		{
-			aux = (aux + pg->accessed) << 31;
-			frames[i].age = (frames[i].age >> 1) | aux;
-			pg->accessed = 0;
-		}
+		aux = (aux + pg->accessed) << 31;
+		frames[i].age = (frames[i].age >> 1) | aux;
+		kprintf("frame: %d, counter: %d", i, frames[i].age);
+
+		pg->accessed = 0;
+
+		aux = 0;
 
 	}
 }
