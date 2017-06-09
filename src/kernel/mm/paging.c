@@ -341,8 +341,6 @@ void update_counter(void)
 	int i;
 	unsigned aux = 0;
 	struct pte *pg;
-
-	kprintf("entrou");
 	
 	for (i = 0; i < NR_FRAMES; i++)
 	{
@@ -351,8 +349,6 @@ void update_counter(void)
 		aux = pg->accessed;
 		aux = aux << 31;
 		frames[i].age = (frames[i].age >> 1) | aux;
-		if( i < 700 && i > 300)
-		kprintf("frame: %d, counter: %x, accessed: %d", i, frames[i].age, pg->accessed);
 
 		pg->accessed = 0;
 		aux = 0;
