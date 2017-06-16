@@ -178,6 +178,7 @@ struct ata_info
 #define REQ_WRITE (1 << 0) /* Write request?         */
 #define REQ_BUF   (1 << 1) /* Buffered request?      */
 #define REQ_SYNC  (1 << 2) /* Synchronous operation? */
+#define REQ_ASYNC (1 << 3) // [GP] Asynchronous
 
 /*
  * I/O operation request.
@@ -664,6 +665,28 @@ PRIVATE int ata_readblk(unsigned minor, buffer_t buf)
 }
 
 /*
+ * Fetch a block from a ATA device.
+ */
+PRIVATE int ata_fetchblk(unsigned minor, buffer_t buf)
+{
+	struct atadev *dev;
+	
+	/* Invalid minor device. */
+	if (minor >= 4)
+		return (-EINVAL);
+	
+	dev = &ata_devices[minor];
+	
+	/* Device not valid. */
+	if (!(dev->flags & ATADEV_VALID))
+		return (-EINVAL);
+	
+	ata_sched_buffered(minor, buf, REQ_BUF | REQ_ASYNC);
+	
+	return (0);
+}
+
+/*
  * Writes a block to a ATA device.
  */
 PRIVATE int ata_writeblk(unsigned minor, buffer_t buf)
@@ -846,6 +869,7 @@ PRIVATE const struct bdev ata_ops = {
 	&ata_read,    /* read()     */
 	&ata_write,   /* write()    */
 	&ata_readblk, /* readblk()  */
+	&ata_fetchblk, /* fetchblk()  */
 	&ata_writeblk /* writeblk() */
 };
 

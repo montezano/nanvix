@@ -307,13 +307,17 @@ PUBLIC struct buffer *bread(dev_t dev, block_t num)
 {
 	struct buffer *buf;
 	
-	buf = getblk(dev, num);
+	buf = getblk(dev, num); //[GP] Pega o bloco da cach
 	
 	/* Valid buffer? */
 	if (buf->flags & BUFFER_VALID)
 		return (buf);
 
 	bdev_readblk(buf);
+
+	// [GP] prefetch
+	bdev_fetchblk(buf);
+
 	
 	/* Update buffer flags. */
 	buf->flags |= BUFFER_VALID;
