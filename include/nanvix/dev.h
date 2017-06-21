@@ -130,7 +130,8 @@
 		ssize_t (*read)(dev_t, char *, size_t, off_t);        /* Read.        */
 		ssize_t (*write)(dev_t, const char *, size_t, off_t); /* Write.       */
 		int (*readblk)(unsigned, struct buffer *);            /* Read block.  */
-		int (*writeblk)(unsigned, struct buffer *);           /* Write block. */
+		int (*writeblk)(unsigned, struct buffer *); 
+		int (*readblk_a)(unsigned, struct buffer *);          /* Write block. */
 	};
 	
 	/*
@@ -190,6 +191,6 @@
 	/*
 	 * Reads a block from a block device.
 	 */
-	EXTERN void bdev_readblk(struct buffer *buf);
+	EXTERN void bdev_readblk(struct buffer *buf, int async_flag);
 	
 #endif /* DEV_H_ */

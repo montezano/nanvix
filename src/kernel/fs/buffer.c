@@ -286,6 +286,11 @@ PUBLIC void brelse(struct buffer *buf)
 	enable_interrupts();
 }
 
+PUBLIC struct buffer *bread(dev_t dev, block_t num)
+{
+	return bread_a(dev, num, 0);
+}
+
 /**
  * @brief Reads a block from a device.
  * 
@@ -303,7 +308,7 @@ PUBLIC void brelse(struct buffer *buf)
  * @note The device number should be valid.
  * @note The block number should be valid.
  */
-PUBLIC struct buffer *bread(dev_t dev, block_t num)
+PUBLIC struct buffer *bread_a(dev_t dev, block_t num, int async_flag)
 {
 	struct buffer *buf;
 	
@@ -313,11 +318,15 @@ PUBLIC struct buffer *bread(dev_t dev, block_t num)
 	if (buf->flags & BUFFER_VALID)
 		return (buf);
 
-	bdev_readblk(buf);
+	bdev_readblk(buf, async_flag);
 	
-	/* Update buffer flags. */
-	buf->flags |= BUFFER_VALID;
-	buf->flags &= ~BUFFER_DIRTY;
+	/* Update buffer flags only if synchronous operation. */
+	if(async_flag != 1)
+	{
+		buf->flags |= BUFFER_VALID;
+		buf->flags &= ~BUFFER_DIRTY;
+	}
+
 	
 	return (buf);
 }

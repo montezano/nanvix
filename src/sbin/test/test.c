@@ -169,6 +169,89 @@ static int io_test(void)
 	return (0);
 }
 
+static int io_test_write(void)
+{
+	// int fd;            /* File descriptor.    */
+	struct tms timing; /* Timing information. */
+	clock_t t0, t1;    /* Elapsed times.      */
+	char *read_buffer1, *read_buffer2, *read_buffer3;      /* Buffer.             */
+	
+	printf("teste 1");
+
+	/* Allocate buffer. */
+	read_buffer1 = malloc(25000*13*sizeof(char));
+	if (read_buffer1 == NULL)
+		exit(EXIT_FAILURE);
+	
+	read_buffer2 = malloc(25000*13*sizeof(char));
+	if (read_buffer2 == NULL)
+		exit(EXIT_FAILURE);
+
+	read_buffer3 = malloc(25000*13*sizeof(char));
+	if (read_buffer3 == NULL)
+		exit(EXIT_FAILURE);
+
+	
+	printf("teste 2");
+
+
+	/* Create hdd. */
+	FILE *stream = fopen("/dev/test_file", "a");
+	FILE *stream2 = fopen("/dev/test_file2", "a");
+	FILE *stream3 = fopen("/dev/test_file3", "a");
+
+	if (!stream || !stream2 || !stream3)
+		exit(EXIT_FAILURE);
+
+	printf("teste 3");
+	int i;
+
+	t0 = times(&timing);
+	
+	/* Read hdd. */
+	if(stream)
+	{
+		char* write_buffer = "trabalhodeso\n";
+		for(i = 0; i < 25000; i++)
+		{
+			fputs(write_buffer, stream);
+			fputs(write_buffer, stream2);
+			fputs(write_buffer, stream3);
+		}
+	}
+
+	fclose(stream);
+	fclose(stream2);
+	fclose(stream3);
+
+	stream = fopen("/dev/test_file", "r");
+	stream2 = fopen("/dev/test_file2", "r");
+	stream3 = fopen("/dev/test_file3", "r");
+
+	fgets(read_buffer1, (25000*13*sizeof(char)), stream);
+	fgets(read_buffer2, (25000*13*sizeof(char)), stream2);
+	fgets(read_buffer3, (25000*13*sizeof(char)), stream3);
+
+	
+	t1 = times(&timing);
+	
+	/* House keeping. */
+	free(read_buffer1);
+	fclose(stream);
+
+	free(read_buffer2);
+	fclose(stream2);
+
+	free(read_buffer3);
+	fclose(stream3);
+	
+	/* Print timing statistics. */
+	if (flags & VERBOSE)
+		printf("  Elapsed: %d\n", t1 - t0);
+	
+	return (0);
+}
+
 /*============================================================================*
  *                                sched_test                                  *
  *============================================================================*/
@@ -598,6 +681,14 @@ int main(int argc, char **argv)
 			printf("  Result:             [%s]\n", 
 				(!io_test()) ? "PASSED" : "FAILED");
 		}
+		
+		if (!strcmp(argv[i], "io2"))
+		{
+			printf("I/O Test 2\n");
+			printf("  Result:             [%s]\n", 
+				(!io_test_write()) ? "PASSED" : "FAILED");
+		}
+
 		
 		/* Swapping test. */
 		else if (!strcmp(argv[i], "swp"))
