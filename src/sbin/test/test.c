@@ -171,7 +171,6 @@ static int io_test(void)
 
 static int io_test_write(void)
 {
-	// int fd;            /* File descriptor.    */
 	struct tms timing; /* Timing information. */
 	clock_t t0, t1;    /* Elapsed times.      */
 	char *read_buffer1, *read_buffer2, *read_buffer3;      /* Buffer.             */
@@ -179,15 +178,15 @@ static int io_test_write(void)
 	printf("teste 1");
 
 	/* Allocate buffer. */
-	read_buffer1 = malloc(25000*13*sizeof(char));
+	read_buffer1 = malloc(20000*13*sizeof(char));
 	if (read_buffer1 == NULL)
 		exit(EXIT_FAILURE);
 	
-	read_buffer2 = malloc(25000*13*sizeof(char));
+	read_buffer2 = malloc(20000*13*sizeof(char));
 	if (read_buffer2 == NULL)
 		exit(EXIT_FAILURE);
 
-	read_buffer3 = malloc(25000*13*sizeof(char));
+	read_buffer3 = malloc(40000*13*sizeof(char));
 	if (read_buffer3 == NULL)
 		exit(EXIT_FAILURE);
 
@@ -203,25 +202,72 @@ static int io_test_write(void)
 	if (!stream || !stream2 || !stream3)
 		exit(EXIT_FAILURE);
 
-	printf("teste 3");
-	int i;
 
 	t0 = times(&timing);
-	
-	/* Read hdd. */
+	int i;
+
 	if(stream)
 	{
 		char* write_buffer = "trabalhodeso\n";
-		for(i = 0; i < 25000; i++)
+		for(i = 0; i < 20000; i++)
 		{
 			fputs(write_buffer, stream);
 			fputs(write_buffer, stream2);
-			fputs(write_buffer, stream3);
 		}
 	}
 
 	fclose(stream);
 	fclose(stream2);
+
+	stream = fopen("/dev/test_file", "r");
+	stream2 = fopen("/dev/test_file2", "r");
+
+	printf("teste 3");
+
+	
+	/* Read hdd. */
+	if (!stream && !stream2 && !stream3)
+	{	
+		char* readstream1 = "";
+		while( 1)
+		{
+			if(fgets(readstream1, (20000*13*sizeof(char)), stream))
+			{
+				fputs(readstream1, stream3);
+				if(fgets(readstream1, (20000*13*sizeof(char)), stream))
+				{
+					fputs(readstream1, stream3);
+				}
+				else
+				{
+					break;
+				}
+			}
+			else
+			{
+				break;
+			}
+
+
+			if(fgets(readstream1, (20000*13*sizeof(char)), stream2))
+			{
+				fputs(readstream1, stream3);
+				if(fgets(readstream1, (20000*13*sizeof(char)), stream2))
+				{
+					fputs(readstream1, stream3);
+				}
+				else
+				{
+					break;
+				}
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+
 	fclose(stream3);
 
 	stream = fopen("/dev/test_file", "r");
