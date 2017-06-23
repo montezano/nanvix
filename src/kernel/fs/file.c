@@ -287,8 +287,8 @@ PUBLIC ssize_t file_read(struct inode *i, void *buf, size_t n, off_t off)
 	char *p;             /* Writing pointer.      */
 	size_t blkoff;       /* Block offset.         */
 	size_t chunk;        /* Data chunk size.      */
-	block_t blk, blk_a, blk_b;         /* Working block number. */
-	struct buffer *bbuf, *bbuf_a, *bbuf_b; /* Working block buffer. */
+	block_t blk, blk_a;         /* Working block number. */
+	struct buffer *bbuf, *bbuf_a; /* Working block buffer. */
 		
 	p = buf;
 	
@@ -299,9 +299,6 @@ PUBLIC ssize_t file_read(struct inode *i, void *buf, size_t n, off_t off)
 	{
 		blk = block_map(i, off, 0);
 		blk_a = block_map(i, off + BLOCK_SIZE, 0);
-		blk_b = block_map(i, off + BLOCK_SIZE*2, 0);
-
-
 		
 		/* End of file reached. */
 		if (blk == BLOCK_NULL)
@@ -312,10 +309,8 @@ PUBLIC ssize_t file_read(struct inode *i, void *buf, size_t n, off_t off)
 		if(blk_a != BLOCK_NULL)
 		{
 			bbuf_a = bread_a(i->dev, blk_a, BR_ASSYNC);
-			bbuf_b = bread_a(i->dev, blk_b, BR_ASSYNC);
 
 			brelse(bbuf_a);
-			brelse(bbuf_b);
 
 		}
 		blkoff = off % BLOCK_SIZE;
